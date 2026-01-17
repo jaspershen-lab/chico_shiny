@@ -55,15 +55,55 @@ server <-
       includeHTML("markdown/authors.html")
     })
     
-    # Dynamic dropdown for molecules based on molecule type
-    observe({
-      updateSelectInput(
-        session = session,
-        inputId = "molecule",
-        choices = "",
-        selected = ""
+    # # Dynamic dropdown for molecules based on molecule type
+    # observe({
+    #   updateSelectInput(
+    #     session = session,
+    #     inputId = "molecule",
+    #     choices = "",
+    #     selected = ""
+    #   )
+    # })
+    
+    #####Dynamic dropdown for bacteria_name based on bacteria_level
+    observeEvent(input$bacteria_level, {
+      bacteria_name_choices <- switch(
+        input$bacteria_level,
+        "Phylum"  = phylum_name,
+        "Class"   = class_name,
+        "Order"   = order_name,
+        "Family"  = family_name,
+        "Genus"   = genus_name,
+        "Species" = species_name,
+        character(0)
       )
-    })
+      
+      updateSelectInput(
+        session,
+        inputId = "bacteria_name",
+        choices = bacteria_name_choices,
+        selected = if (length(bacteria_name_choices) > 0) bacteria_name_choices[1] else NULL
+      )
+    }, ignoreInit = FALSE)
+    
+    
+    #####Dynamic dropdown for group based on group_type
+    observeEvent(input$group_type, {
+      group_choices <- switch(
+        input$group_type,
+        "Affect or not"  = c("Negative", "Positive"),
+        "HPV risk"   = c("Negative", "Low_risk", "High_risk"),
+        "HPV persistent"   = c("Non-Persistent", "Persistent"),
+        character(0)
+      )
+      
+      updateSelectInput(
+        session,
+        inputId = "group",
+        choices = group_choices,
+        selected = NULL
+      )
+    }, ignoreInit = FALSE)
     
     makePlot <- reactive({
       req(input$molecule, input$participant)

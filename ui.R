@@ -7,6 +7,8 @@ library(dplyr)
 library(RColorBrewer)
 library(plotly)
 library(DT)
+library(masstools)
+library(massdataset)
 
 # load data
 # set.seed(123)
@@ -28,9 +30,9 @@ library(DT)
 
 # denmark_data <-
 #   denmark_data2
-# 
+#
 # participants <- c("All participants", unique(denmark_data$subject_id2))
-# 
+#
 # # Define molecule types and associated molecules outside the server
 # molecule_choices <- list(
 #   RNA = unique(denmark_data$Molecular_name[denmark_data$class == "RNA"]),
@@ -38,13 +40,47 @@ library(DT)
 #   Metabolite = unique(denmark_data$Molecular_name[denmark_data$class == "Metabolite"]),
 #   Cytokine = unique(denmark_data$Molecular_name[denmark_data$class == "Cytokine"])
 # )
-# 
-# 
+#
+#
 # subject_color <-
 #   colorRampPalette(colors = RColorBrewer::brewer.pal(11, name = "BrBG"))(n = length(unique(denmark_data$subject_id2)))
-# 
+#
 # names(subject_color) <-
 #   stringr::str_sort(unique(denmark_data$subject_id2), numeric = TRUE)
+
+
+###load data
+load("data/phylum_microbiome_data.rda")
+load("data/class_microbiome_data.rda")
+load("data/order_microbiome_data.rda")
+load("data/family_microbiome_data.rda")
+load("data/genus_microbiome_data.rda")
+load("data/species_microbiome_data.rda")
+
+phylum_name <-
+  phylum_microbiome_data@variable_info$variable_id
+
+class_name <-
+  class_microbiome_data@variable_info$variable_id
+
+order_name <-
+  order_microbiome_data@variable_info$variable_id
+
+family_name <-
+  family_microbiome_data@variable_info$variable_id
+
+genus_name <-
+  genus_microbiome_data@variable_info$variable_id
+
+species_name <-
+  species_microbiome_data@variable_info$variable_id
+
+sample_info <-
+  species_microbiome_data@sample_info %>% 
+  dplyr::filter(Affect != "Blank")
+
+sample_info$persistent[sample_info$persistent == "P"] <- "Persistent"
+sample_info$persistent[sample_info$persistent == "NP"] <- "Non-Persistent"
 
 
 # UI
@@ -99,43 +135,51 @@ ui <- dashboardPage(
           box(
             title = "Plot Controls",
             selectInput(
-              "participant",
-              "Participants:",
+              "bacteria_level",
+              "Level:",
+              choices = c("Phylum", "Class", "Order", "Family", "Genus", "Species"),
+              selected = "Phylum",
+              multiple = FALSE
+            ),
+            selectInput(
+              inputId = "bacteria_name",
+              label = "Bacteria:",
               choices = "",
-              selected = "All participants",
+              selected = character(0)
+            ),
+            selectInput(
+              inputId = "group_type",
+              label = "Group type:",
+              choices = c("Affect or not", "HPV risk", "HPV persistent"),
+              selected = "Affect or not",
+              multiple = FALSE
+            ),
+            selectInput(
+              inputId = "group",
+              label = "Group:",
+              choices = "",
+              selected = character(0),
               multiple = TRUE
             ),
-            selectInput(
-              inputId = "moleculeType",
-              label = "Molecule class:",
-              choices = "",
-              selected = "Protein"
-            ),
-            selectInput(
-              inputId = "molecule",
-              label = "Molecule:",
-              choices = "",
-              selected = ""
-            ),
-            checkboxInput("smooth", "Smooth lines?", TRUE),
-            checkboxInput("smooth_one", "Only one smoothed line?", TRUE),
-            checkboxInput("points", "Show points?", TRUE),
-            numericInput(
-              "width",
-              "Download Width (in):",
-              10,
-              min = 1,
-              max = 20
-            ),
-            numericInput(
-              "height",
-              "Download Height (in):",
-              6,
-              min = 1,
-              max = 20
-            ),
-            selectInput("filetype", "File Type:", choices = c("PNG", "PDF")),
-            downloadButton("downloadPlot", "Download Plot"),
+            # checkboxInput("smooth", "Smooth lines?", TRUE),
+            # checkboxInput("smooth_one", "Only one smoothed line?", TRUE),
+            # checkboxInput("points", "Show points?", TRUE),
+            # numericInput(
+            #   "width",
+            #   "Download Width (in):",
+            #   10,
+            #   min = 1,
+            #   max = 20
+            # ),
+            # numericInput(
+            #   "height",
+            #   "Download Height (in):",
+            #   6,
+            #   min = 1,
+            #   max = 20
+            # ),
+            # selectInput("filetype", "File Type:", choices = c("PNG", "PDF")),
+            # downloadButton("downloadPlot", "Download Plot"),
             width = NULL
           )
         ), column(
