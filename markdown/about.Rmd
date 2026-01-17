@@ -1,0 +1,13 @@
+---
+title: "CHICO Study"
+output: html_document
+---
+
+To comprehensively investigate the relationship between the cervical microbiome, HPV infection dynamics, and cervical cancer development, we established a large-scale, prospective, longitudinal cohort: the Chengdu and Xi’an HPV Infection and Cervical Microbiome study (CHICO study). This cohort enrolled 2,447 Chinese women, including 2,218 HPV-positive and 229 HPV-negative participants at baseline (Fig. 1a; Methods).
+Cervical swab samples were collected from all participants at baseline, prior to any therapeutic intervention. Among the 2,218 HPV-positive individuals, 1,820 were classified as high-risk HPV carriers and 354 as low-risk, while 34 participants had been clinically diagnosed with cervical cancer (CC) (Methods; Fig. 1b). Consistent with previous studies, the majority of cervical cancer cases were associated with high-risk HPV genotypes, with 40 out of 44 cases (90.9%) testing positive for high-risk HPV (Fig. 1b), highlighting the well-established link between high-risk HPV infection and cervical carcinogenesis.
+
+
+![](figure_1.png)
+
+<!-- Add several blank lines using HTML -->
+<br><br><br><br><br>
