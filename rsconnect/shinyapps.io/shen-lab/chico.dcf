@@ -1,0 +1,12 @@
+name: chico
+title: chico
+username: shen-lab
+account: shen-lab
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16451524
+bundleId: 11460557
+url: https://shen-lab.shinyapps.io/chico/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
