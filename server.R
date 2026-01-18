@@ -1,41 +1,3 @@
-
-# load data
-# set.seed(123)
-# participants <- c("All participants", paste0("Participant_", 1:40))
-# data <- expand.grid(Weeks = 1:40, Participant = participants[-1])
-# data$Progesterone <- rnorm(nrow(data), 50, 10)
-# data$Estrogen <- rnorm(nrow(data), 100, 20)
-# data$HCG <- rnorm(nrow(data), 2000, 500)
-#
-# # Add correlation and recovery score to the simulated dataset
-# data$Correlation <-
-#   runif(nrow(data), -1, 1) # Random values between -1 and 1
-# data$Recovery_Score <-
-#   runif(nrow(data), 0, 100) # Random values between 0 and 100
-#
-# data$PValue <- rep(0.000001, nrow(data))
-# data$PValue <- rep(0.000001, nrow(data))
-
-# load("data/denmark_data2")
-# 
-# denmark_data <-
-#   denmark_data2
-# 
-# participants <- c("All participants", unique(denmark_data$subject_id2))
-# 
-# # Define molecule types and associated molecules outside the server
-# molecule_choices <- list(RNA = unique(denmark_data$Molecular_name[denmark_data$class == "RNA"]),
-#                          Protein = unique(denmark_data$Molecular_name[denmark_data$class == "Protein"]),
-#                          Metabolite = unique(denmark_data$Molecular_name[denmark_data$class == "Metabolite"]),
-#                          Cytokine = unique(denmark_data$Molecular_name[denmark_data$class == "Cytokine"]))
-# 
-# 
-# subject_color <-
-#   colorRampPalette(colors = RColorBrewer::brewer.pal(11, name = "BrBG"))(n = length(unique(denmark_data$subject_id2)))
-# 
-# names(subject_color) <-
-#   stringr::str_sort(unique(denmark_data$subject_id2), numeric = TRUE)
-
 # Server
 server <-
   function(input, output, session) {
@@ -82,7 +44,10 @@ server <-
         session,
         inputId = "bacteria_name",
         choices = bacteria_name_choices,
-        selected = if (length(bacteria_name_choices) > 0) bacteria_name_choices[1] else NULL
+        selected = if (length(bacteria_name_choices) > 0)
+          bacteria_name_choices[1]
+        else
+          NULL
       )
     }, ignoreInit = FALSE)
     
@@ -97,114 +62,205 @@ server <-
         character(0)
       )
       
+      # Affect or not 默认选 Positive & Negative；其他类型默认全选
+      selected_groups <- if (input$group_type == "Affect or not") {
+        c("Negative", "Positive")
+      } else {
+        group_choices
+      }
+      
       updateSelectInput(
         session,
         inputId = "group",
         choices = group_choices,
-        selected = NULL
+        selected = selected_groups
       )
     }, ignoreInit = FALSE)
     
-    makePlot <- reactive({
-      req(input$molecule, input$participant)
-      
-      filtered_data <-
-        if ("All participants" %in% input$participant ||
-            length(input$participant) == 0) {
-          denmark_data %>% 
-            filter(Molecular_name %in% input$molecule)
-        } else {
-          denmark_data %>% 
-            filter(subject_id2 %in% input$participant) %>% 
-            filter(Molecular_name %in% input$molecule) %>% 
-            dplyr::filter(!is.na(value))
-        }
-      
-      # color_palette <-
-      #   scales::hue_pal()(length(unique(filtered_data$Participant)))
-      
-      p <-
-        ggplot(filtered_data,
-               aes(
-                 x = g_stage,
-                 y = value
-               ))
-      
-      if (input$points) {
-        p <- p + geom_point(aes(
-          group = subject_id2,
-          color = subject_id2
-        )) 
-      }
-      
-      if (input$smooth) {
-        if(input$smooth_one){
-          p <-
-            p + 
-            geom_smooth(se = FALSE,
-                        color = "black") 
-        }else{
-          p <- p + geom_smooth(se = FALSE,
-                               aes(
-                                 group = subject_id2,
-                                 color = subject_id2
-                               ))  
-        }
-      } else {
-        p <- p + geom_line(
-          aes(
-            group = subject_id2,
-            color = subject_id2
+  
+    ## ----------- 4. 只在点击按钮后，生成用于绘图/统计的数据 -----------
+    
+    microbiome_df <-
+      eventReactive(input$generate_plot, {
+        # 基本参数检查
+        req(input$bacteria_level, input$bacteria_name)
+        
+        # 至少要选两个 group
+        req(input$group)
+        validate(need(length(input$group) >= 2, "Please select at least two groups."))
+        
+        microbiome_dataset <- get_level_dataset(input$bacteria_level)
+        req(!is.null(microbiome_dataset))
+        
+        # 检查这个菌是否在表达矩阵里
+        validate(
+          need(
+            input$bacteria_name %in% rownames(microbiome_dataset$expression_data),
+            "Selected bacteria not found in expression data."
           )
-        ) 
-      }
+        )
+        
+        # 当前菌的相对丰度
+        abund_vec <-
+          as.numeric(microbiome_dataset$expression_data[input$bacteria_name, ])
+        
+        df <- data.frame(
+          sample_id = colnames(microbiome_dataset$expression_data),
+          abundance = abund_vec,
+          stringsAsFactors = FALSE
+        )
+        
+        # 选哪个分组变量
+        group_var <- switch(
+          input$group_type,
+          "Affect or not"  = "Affect",
+          "HPV risk"       = "risk",
+          # 如果列名不同，在这里改
+          "HPV persistent" = "persistent",
+          "Affect"         # 默认兜底
+        )
+        
+        sample_info <-
+          microbiome_dataset$sample_info %>%
+          dplyr::select(sample_id, !!sym(group_var))
+        
+        colnames(sample_info)[2] <- "group"
+        
+        df <-
+          df %>%
+          dplyr::left_join(sample_info, by = "sample_id")
+        
+        # 按选定 group 过滤
+        df <- df %>%
+          dplyr::filter(group %in% input$group)
+        df$group <-
+          factor(df$group, levels = group_levels)
+        
+        shiny::validate(
+          shiny::need(
+            length(unique(df[["group"]])) >= 2,
+            "Selected groups do not have enough data (need at least two groups with data)."
+          )
+        )
+        
+        df
+      })
+    
+    
+    make_box_plot <- eventReactive(input$generate_plot, {
+      df <- microbiome_df()
+      req(nrow(df) > 0)
+      group_var <- "group"
       
       p <-
-        p + ggtitle(paste(input$moleculeType, "-", input$molecule))
-      p <- p + 
-        scale_color_manual(values = subject_color[names(subject_color) %in% filtered_data$subject_id2]) +
+        ggplot(df, aes(x = group, y = abundance)) +
+        geom_boxplot(outlier.shape = NA, aes(color = group),
+                     show.legend = FALSE) +
+        geom_jitter(
+          width = 0.2,
+          alpha = 0.6,
+          shape = 21,
+          size = 3,
+          color = "black",
+          aes(fill = group),
+          show.legend = FALSE
+        ) +
+        labs(
+          x     = input$group_type,
+          y     = "Relative abundance",
+          title = paste0(input$bacteria_level, " - ", input$bacteria_name)
+        ) +
         theme_bw() +
-        theme(panel.grid.minor = element_blank()) +
-        labs(x = "Gestational age (weeks)",
-             y = "Scaled intensity")
+        theme(panel.grid.minor = element_blank(),
+              axis.text.x = element_text(angle = 30, hjust = 1),
+              legend.position = "none") +
+        scale_color_manual(values = group_color) +
+        scale_fill_manual(values = group_color) +
+        ggsignif::geom_signif(
+          comparisons = combn(unique(df[["group"]]), 2, simplify = FALSE),
+          map_signif_level = TRUE,
+          test = "wilcox.test",
+          tip_length = 0.01,
+          textsize = 4
+        )
       
       return(p)
     })
     
-    output$lineChart <- renderPlotly({
-      p <- makePlot()
-      ggplotly(p) %>% layout(autosize = TRUE)
+    output$box_plot <- renderPlotly({
+      p <- make_box_plot()
+      ggplotly(p) %>% 
+        layout(
+          autosize = TRUE,
+          plot_bgcolor  = "white",  
+          paper_bgcolor = "white",
+          xaxis = list(
+            showgrid = TRUE,
+            gridcolor = "grey85"
+          ),
+          yaxis = list(
+            showgrid = TRUE,
+            gridcolor = "grey85"
+          )
+        )
     })
     
-    make_table <- reactive({
-      req(input$molecule, input$participant)
+    
+    make_stats_table <- reactive({
+      df <- microbiome_df()
+      req(nrow(df) > 0)
       
-      filtered_data <-
-        if ("All participants" %in% input$participant ||
-            length(input$participant) == 0) {
-          denmark_data %>% 
-            filter(Molecular_name %in% input$molecule)
+      groups <- unique(df[["group"]])
+      
+      # two groups：Wilcoxon rank-sum test
+      if (length(groups) == 2) {
+        g1 <- groups[1]
+        g2 <- groups[2]
+        x  <- df$abundance[df[["group"]] == g1]
+        y  <- df$abundance[df[["group"]] == g2]
+        
+        wt <- tryCatch(
+          wilcox.test(x, y),
+          error = function(e) NULL
+        )
+        
+        if (is.null(wt)) {
+          data.frame(
+            Test   = "Wilcoxon rank-sum",
+            Group1 = g1,
+            Group2 = g2,
+            p_value = NA_real_,
+            stringsAsFactors = FALSE
+          )
         } else {
-          denmark_data %>% 
-            filter(subject_id2 %in% input$participant) %>% 
-            filter(Molecular_name %in% input$molecule) %>% 
-            dplyr::filter(!is.na(value))
+          data.frame(
+            Test   = "Wilcoxon rank-sum",
+            Group1 = g1,
+            Group2 = g2,
+            p_value = wt$p.value,
+            stringsAsFactors = FALSE
+          )
         }
-      
-      molecule_info <-
-      filtered_data %>% 
-        dplyr::distinct(variable_id, .keep_all = TRUE) %>% 
-        select(SAM_score, SAM_FDR, Correlation, Correlation_FDR,
-               ENSEMBL, UNIPROT, SYMBOL, ENTREZID, recover_score,
-               HMDB_ID, KEGG_ID)
-      
-      return(molecule_info)
+        
+      } else {
+        # 多组：Kruskal–Wallis
+        kt <- tryCatch(
+          kruskal.test(abundance ~ group, data = df),
+          error = function(e) NULL
+        )
+        
+        data.frame(
+          Test    = "Kruskal-Wallis",
+          Groups  = paste(sort(groups), collapse = ", "),
+          p_value = if (is.null(kt)) NA_real_ else kt$p.value,
+          stringsAsFactors = FALSE
+        )
+      }
     })
     
-    
-    output$moleculeInfoTable <- renderDT({
-      molecule_info <- make_table()
-      datatable(molecule_info)
+    output$stats_table <- renderDT({
+      stats_table <- make_stats_table()
+      datatable(stats_table)
     })
     
     output$downloadPlot <- downloadHandler(
@@ -216,11 +272,11 @@ server <-
           png(file,
               width = input$width * 96,
               height = input$height * 96)
-          print(makePlot())
+          print(make_box_plot())
           dev.off()
         } else if (input$filetype == "PDF") {
           pdf(file, width = input$width, height = input$height)
-          print(makePlot())
+          print(make_box_plot())
           dev.off()
         }
       }

@@ -1,87 +1,3 @@
-# Required Libraries
-# install.packages(c("shiny", "shinydashboard", "ggplot2", "dplyr", "RColorBrewer", "plotly"))
-library(shiny)
-library(shinydashboard)
-library(ggplot2)
-library(dplyr)
-library(RColorBrewer)
-library(plotly)
-library(DT)
-library(masstools)
-library(massdataset)
-
-# load data
-# set.seed(123)
-# participants <- c("All participants", paste0("Participant_", 1:40))
-# data <- expand.grid(Weeks = 1:40, Participant = participants[-1])
-# data$Progesterone <- rnorm(nrow(data), 50, 10)
-# data$Estrogen <- rnorm(nrow(data), 100, 20)
-# data$HCG <- rnorm(nrow(data), 2000, 500)
-#
-# # Add correlation and recovery score to the simulated dataset
-# data$Correlation <-
-#   runif(nrow(data), -1, 1) # Random values between -1 and 1
-# data$Recovery_Score <-
-#   runif(nrow(data), 0, 100) # Random values between 0 and 100
-#
-# data$PValue <- rep(0.000001, nrow(data))
-
-# load("data/denmark_data2")
-
-# denmark_data <-
-#   denmark_data2
-#
-# participants <- c("All participants", unique(denmark_data$subject_id2))
-#
-# # Define molecule types and associated molecules outside the server
-# molecule_choices <- list(
-#   RNA = unique(denmark_data$Molecular_name[denmark_data$class == "RNA"]),
-#   Protein = unique(denmark_data$Molecular_name[denmark_data$class == "Protein"]),
-#   Metabolite = unique(denmark_data$Molecular_name[denmark_data$class == "Metabolite"]),
-#   Cytokine = unique(denmark_data$Molecular_name[denmark_data$class == "Cytokine"])
-# )
-#
-#
-# subject_color <-
-#   colorRampPalette(colors = RColorBrewer::brewer.pal(11, name = "BrBG"))(n = length(unique(denmark_data$subject_id2)))
-#
-# names(subject_color) <-
-#   stringr::str_sort(unique(denmark_data$subject_id2), numeric = TRUE)
-
-
-###load data
-load("data/phylum_microbiome_data.rda")
-load("data/class_microbiome_data.rda")
-load("data/order_microbiome_data.rda")
-load("data/family_microbiome_data.rda")
-load("data/genus_microbiome_data.rda")
-load("data/species_microbiome_data.rda")
-
-phylum_name <-
-  phylum_microbiome_data@variable_info$variable_id
-
-class_name <-
-  class_microbiome_data@variable_info$variable_id
-
-order_name <-
-  order_microbiome_data@variable_info$variable_id
-
-family_name <-
-  family_microbiome_data@variable_info$variable_id
-
-genus_name <-
-  genus_microbiome_data@variable_info$variable_id
-
-species_name <-
-  species_microbiome_data@variable_info$variable_id
-
-sample_info <-
-  species_microbiome_data@sample_info %>% 
-  dplyr::filter(Affect != "Blank")
-
-sample_info$persistent[sample_info$persistent == "P"] <- "Persistent"
-sample_info$persistent[sample_info$persistent == "NP"] <- "Non-Persistent"
-
 
 # UI
 ui <- dashboardPage(
@@ -144,8 +60,8 @@ ui <- dashboardPage(
             selectInput(
               inputId = "bacteria_name",
               label = "Bacteria:",
-              choices = "",
-              selected = character(0)
+              choices = phylum_name,
+              selected = phylum_name[1],
             ),
             selectInput(
               inputId = "group_type",
@@ -157,10 +73,11 @@ ui <- dashboardPage(
             selectInput(
               inputId = "group",
               label = "Group:",
-              choices = "",
-              selected = character(0),
+              choices = c("Negative", "Positive"),
+              selected = c("Negative", "Positive"),
               multiple = TRUE
             ),
+            actionButton("generate_plot", "Generate plot", icon = icon("play")),
             # checkboxInput("smooth", "Smooth lines?", TRUE),
             # checkboxInput("smooth_one", "Only one smoothed line?", TRUE),
             # checkboxInput("points", "Show points?", TRUE),
@@ -184,8 +101,8 @@ ui <- dashboardPage(
           )
         ), column(
           width = 9,
-          box(plotlyOutput("lineChart"), width = NULL),
-          box(DTOutput("moleculeInfoTable"), width = NULL)
+          box(plotlyOutput("box_plot"), width = NULL),
+          box(DTOutput("stats_table"), width = NULL)
         )
       )),
       # Authors tab
