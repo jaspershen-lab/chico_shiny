@@ -8,70 +8,92 @@ output:
 
 ```{css, echo=FALSE}
 .authors-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 每行 4 列 */
+  gap: 20px; /* 每个作者之间的空隙 */
   align-items: start;
+}
+
+.author {
+  text-align: center;
 }
 
 .author img {
   border-radius: 50%;
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
   display: block;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto 10px auto;
 }
 
-.author {
-  flex: 1;
-  text-align: center;
-}
+
 ```
-
-## Project Authors
 
 Here are the brilliant minds behind this project:
 
 <div class="authors-row">
 
 <div class="author">
+![Xue Bai](images/example.png)  
+**Xue Bai**  
+ School of Basic Medical Sciences, Chengdu University  
+<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
+<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
+<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
+</div>
+
+<div class="author">
+![Jingxiang Zhang](images/example.png)  
+**Jingxiang Zhang**  
+ Lee Kong Chian School of Medicine, Nanyang Technological University, Singapore
+<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
+<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
+<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
+</div>
+
+
+<div class="author">
+![Liang Liang](images/example.png)  
+**Diyan Li**  
+ School of Pharmacy, Chengdu University 
+<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
+<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
+<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
+</div>
+
+
+<div class="author">
+![Wei Cheng](images/example.png)  
+**Wei Cheng**  
+ School of Pharmacy, Chengdu University 
+<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
+<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
+<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
+</div>
+
+<div class="author">
+![Hongxi Zhao](images/example.png)  
+**Hongxi Zhao**  
+ The Tangdu Hospital of the Fourth Military Medical University (Tangdu Hospital)
+<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
+<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
+<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
+</div>
+
+
+<div class="author">
 ![Xiaotao Shen](images/xiaotao.jpg)  
 **Xiaotao Shen**  
  Lee Kong Chian School of Medicine, Nanyang Technological University, Singapore  
 <a href="https://www.linkedin.com/in/xiaotao-shen/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.xiaotao.com/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:xiaotao@stanford.edu"><i class="fas fa-envelope"></i></a>  
-</div>
-
-<div class="author">
-![Liang Liang](images/liang.jpg)  
-**Liang Liang**  
- Stanford University  
-<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
-</div>
-
-<div class="author">
-![Liang Liang](images/yue-wu.jpg)  
-**Yue Wu**  
- Stanford University  
-<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
-</div>
-
-
-<div class="author">
-![Liang Liang](images/michael-snyder.png)  
-**Michael Snyder**  
- Stanford University  
-<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
+<a href="https://www.shen-lab.org/" target="_blank"><i class="fas fa-globe"></i></a> 
+<a href="mailto:xiaotao.shen@outlook.com"><i class="fas fa-envelope"></i></a>  
 </div>
 
 <!-- ... Similarly for other authors ... -->
 
 </div>
+
+<!-- Add several blank lines using HTML -->
+<br><br><br><br><br>

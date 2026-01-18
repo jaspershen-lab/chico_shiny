@@ -17,16 +17,6 @@ server <-
       includeHTML("markdown/authors.html")
     })
     
-    # # Dynamic dropdown for molecules based on molecule type
-    # observe({
-    #   updateSelectInput(
-    #     session = session,
-    #     inputId = "molecule",
-    #     choices = "",
-    #     selected = ""
-    #   )
-    # })
-    
     #####Dynamic dropdown for bacteria_name based on bacteria_level
     observeEvent(input$bacteria_level, {
       bacteria_name_choices <- switch(
@@ -62,7 +52,7 @@ server <-
         character(0)
       )
       
-      # Affect or not 默认选 Positive & Negative；其他类型默认全选
+      # Affect or not
       selected_groups <- if (input$group_type == "Affect or not") {
         c("Negative", "Positive")
       } else {
@@ -77,22 +67,18 @@ server <-
       )
     }, ignoreInit = FALSE)
     
-  
-    ## ----------- 4. 只在点击按钮后，生成用于绘图/统计的数据 -----------
+    
     
     microbiome_df <-
       eventReactive(input$generate_plot, {
-        # 基本参数检查
         req(input$bacteria_level, input$bacteria_name)
         
-        # 至少要选两个 group
         req(input$group)
         validate(need(length(input$group) >= 2, "Please select at least two groups."))
         
         microbiome_dataset <- get_level_dataset(input$bacteria_level)
         req(!is.null(microbiome_dataset))
         
-        # 检查这个菌是否在表达矩阵里
         validate(
           need(
             input$bacteria_name %in% rownames(microbiome_dataset$expression_data),
@@ -100,7 +86,6 @@ server <-
           )
         )
         
-        # 当前菌的相对丰度
         abund_vec <-
           as.numeric(microbiome_dataset$expression_data[input$bacteria_name, ])
         
@@ -110,14 +95,12 @@ server <-
           stringsAsFactors = FALSE
         )
         
-        # 选哪个分组变量
         group_var <- switch(
           input$group_type,
           "Affect or not"  = "Affect",
           "HPV risk"       = "risk",
-          # 如果列名不同，在这里改
           "HPV persistent" = "persistent",
-          "Affect"         # 默认兜底
+          "Affect"         
         )
         
         sample_info <-
@@ -129,8 +112,7 @@ server <-
         df <-
           df %>%
           dplyr::left_join(sample_info, by = "sample_id")
-        
-        # 按选定 group 过滤
+      
         df <- df %>%
           dplyr::filter(group %in% input$group)
         df$group <-
@@ -154,7 +136,8 @@ server <-
       
       p <-
         ggplot(df, aes(x = group, y = abundance)) +
-        geom_boxplot(outlier.shape = NA, aes(color = group),
+        geom_boxplot(outlier.shape = NA,
+                     aes(color = group),
                      show.legend = FALSE) +
         geom_jitter(
           width = 0.2,
@@ -171,9 +154,11 @@ server <-
           title = paste0(input$bacteria_level, " - ", input$bacteria_name)
         ) +
         theme_bw() +
-        theme(panel.grid.minor = element_blank(),
-              axis.text.x = element_text(angle = 30, hjust = 1),
-              legend.position = "none") +
+        theme(
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(angle = 30, hjust = 1),
+          legend.position = "none"
+        ) +
         scale_color_manual(values = group_color) +
         scale_fill_manual(values = group_color) +
         ggsignif::geom_signif(
@@ -189,19 +174,13 @@ server <-
     
     output$box_plot <- renderPlotly({
       p <- make_box_plot()
-      ggplotly(p) %>% 
+      ggplotly(p) %>%
         layout(
           autosize = TRUE,
-          plot_bgcolor  = "white",  
+          plot_bgcolor  = "white",
           paper_bgcolor = "white",
-          xaxis = list(
-            showgrid = TRUE,
-            gridcolor = "grey85"
-          ),
-          yaxis = list(
-            showgrid = TRUE,
-            gridcolor = "grey85"
-          )
+          xaxis = list(showgrid = TRUE, gridcolor = "grey85"),
+          yaxis = list(showgrid = TRUE, gridcolor = "grey85")
         )
     })
     
@@ -221,7 +200,8 @@ server <-
         
         wt <- tryCatch(
           wilcox.test(x, y),
-          error = function(e) NULL
+          error = function(e)
+            NULL
         )
         
         if (is.null(wt)) {
@@ -243,16 +223,20 @@ server <-
         }
         
       } else {
-        # 多组：Kruskal–Wallis
+        # mulit-group：Kruskal–Wallis
         kt <- tryCatch(
           kruskal.test(abundance ~ group, data = df),
-          error = function(e) NULL
+          error = function(e)
+            NULL
         )
         
         data.frame(
           Test    = "Kruskal-Wallis",
           Groups  = paste(sort(groups), collapse = ", "),
-          p_value = if (is.null(kt)) NA_real_ else kt$p.value,
+          p_value = if (is.null(kt))
+            NA_real_
+          else
+            kt$p.value,
           stringsAsFactors = FALSE
         )
       }

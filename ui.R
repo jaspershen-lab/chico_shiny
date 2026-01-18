@@ -1,7 +1,7 @@
 
 # UI
 ui <- dashboardPage(
-  skin = "purple",
+  skin = "blue",
   dashboardHeader(title = "CHICO Study"),
   dashboardSidebar(sidebarMenu(
     menuItem("About", tabName = "about", icon = icon("info-circle")),
@@ -123,30 +123,44 @@ ui <- dashboardPage(
     tags$footer(
       div(
         style = "background-color: #ecf0f4; display: flex; align-items: center; justify-content: left; padding: 10px; height: 80px; position: fixed; bottom: 0; width: 100%; z-index: 100; border-top: 1px solid #ccc;",
-        tags$img(
-          src = "ntu_logo.png",
-          height = "80px",
-          style = "margin-right: 15px;",
-          onerror = "this.onerror=null; this.src='default_logo.png';"
-        ),
-        # Add vertical line
-        div(style = "border-left: 1px solid #ccc; height: 50px; margin-right: 15px;"),
-        tags$img(
-          src = "SUSig_Red_Stree_Stacked_Left.png",
-          height = "80px",
-          style = "margin-right: 15px;",
-          onerror = "this.onerror=null; this.src='default_logo.png';"
-        ),
-        # Add vertical line
-        div(style = "border-left: 1px solid #ccc; height: 50px; margin-right: 15px;"),
+        
         tags$img(
           src = "CHICO_logo.png",
           height = "60px",
-          style = "margin-right: 15px;",
+          style = "margin-right: 10px;",
           onerror = "this.onerror=null; this.src='default_logo.png';"
         ),
         # Add vertical line
-        div(style = "border-left: 1px solid #ccc; height: 50px; margin-right: 15px;"),
+        div(style = "border-left: 1px solid #ccc; height: 50px; margin-right: 10px;"),
+        
+        tags$img(
+          src = "Chengdu_University_logo.png",
+          height = "50px",
+          style = "margin-right: 10px;",
+          onerror = "this.onerror=null; this.src='default_logo.png';"
+        ),
+        
+        # Add vertical line
+        div(style = "border-left: 1px solid #ccc; height: 50px; margin-right: 10px;"),
+        
+        tags$img(
+          src = "Fourth_Military_Medical_University_logo.png",
+          height = "50px",
+          style = "margin-right: 10px;",
+          onerror = "this.onerror=null; this.src='default_logo.png';"
+        ),
+        
+        # Add vertical line
+        div(style = "border-left: 1px solid #ccc; height: 50px; margin-right: 10px;"),
+        tags$img(
+          src = "ntu_logo.png",
+          height = "70px",
+          style = "margin-right: 10px;",
+          onerror = "this.onerror=null; this.src='default_logo.png';"
+        ),
+        # Add vertical line
+        div(style = "border-left: 1px solid #ccc; height: 50px; margin-right: 10px;"),
+        
         div(
           # HTML("The Shen Lab at Nanyang Technological University Singapore"),
           # HTML("<br>"),
