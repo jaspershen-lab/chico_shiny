@@ -1,4 +1,4 @@
-#Chico Shiny App
+# Chico Shiny App
 
 # Installation
 ``` r
