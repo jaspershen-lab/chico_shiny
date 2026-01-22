@@ -7,6 +7,6 @@ remotes::install_github("jaspershen-lab/chico_shiny")
 
 # Start
 ``` r
-library(chicoShiny)
+library(chicoshiny)
 run_chico_shiny()
 ```
