@@ -1,0 +1,29 @@
+Package: chicoshiny
+Title: An interesting shiny app
+Version: 0.0.1
+Authors@R: 
+    c(person(given = "Xiaotao",
+             family = "Shen",
+             role = c("aut", "cre"),
+             email = "shenxt1990@outlook.com",
+             comment = c(ORCID = "0000-0002-9608-9964")),
+      person(given = "Yijiang",
+             family = "Liu",
+             role = c("aut"),
+             email = "ejoliu@outlook.com",
+             comment = c(ORCID = "0009-0008-6061-0595")))
+Description: An interactive Shiny application for the CHICO study visualization.
+Depends: R (>= 4.1.0)
+Imports: 
+    shiny,
+    shinydashboard,
+    ggplot2,
+    dplyr,
+    RColorBrewer,
+    plotly,
+    DT,
+    ggsignif
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.3
