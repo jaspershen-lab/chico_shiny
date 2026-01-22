@@ -1,16 +1,13 @@
 ---
 title: "Authors"
-output: 
-  html_document:
-    css: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css
 ---
 
 
 ```{css, echo=FALSE}
 .authors-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 每行 4 列 */
-  gap: 20px; /* 每个作者之间的空隙 */
+  grid-template-columns: repeat(3, 1fr); /* 每行 4 列 */
+  gap: 30px; /* 每个作者之间的空隙 */
   align-items: start;
 }
 
@@ -27,68 +24,57 @@ output:
   margin: 0 auto 10px auto;
 }
 
+/* 在你的 css 代码块里加上这个 */
+h1 {
+  margin-bottom: 50px; /* 标题下方的间距 */
+}
 
 ```
-
-Here are the brilliant minds behind this project:
 
 <div class="authors-row">
 
 <div class="author">
-![Xue Bai](images/example.png)  
-**Xue Bai**  
- School of Basic Medical Sciences, Chengdu University  
-<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
+![Xue Bai](images/baixue.jpg)  
+**Dr. Xue Bai**  
+
+ School of Basic Medical Sciences <br>
+ Chengdu University  
 </div>
 
 <div class="author">
-![Jingxiang Zhang](images/example.png)  
-**Jingxiang Zhang**  
- Lee Kong Chian School of Medicine, Nanyang Technological University, Singapore
-<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
-</div>
-
-
-<div class="author">
-![Liang Liang](images/example.png)  
-**Diyan Li**  
- School of Pharmacy, Chengdu University 
-<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
+![Jingxiang Zhang](images/jingxiang.jpg)  
+**Dr. Jingxiang Zhang**  
+Research Fellow <br>
+ Lee Kong Chian School of Medicine <br>
+ Nanyang Technological University, Singapore
 </div>
 
 
 <div class="author">
-![Wei Cheng](images/example.png)  
-**Wei Cheng**  
- School of Pharmacy, Chengdu University 
-<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
+![Diyan Li](images/diyan.jpg)  
+**Dr. Diyan Li**  
+Professor <br>
+ School of Basic Medical Sciences <br>
+ Chengdu University  
 </div>
 
+
 <div class="author">
-![Hongxi Zhao](images/example.png)  
-**Hongxi Zhao**  
+![Hongxi Zhao](images/hongxi.jpg)  
+**Dr. Hongxi Zhao**  
+Associate Professor <br>
  The Tangdu Hospital of the Fourth Military Medical University (Tangdu Hospital)
-<a href="https://www.linkedin.com/in/liang-liang/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.liang.com/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:liang@stanford.edu"><i class="fas fa-envelope"></i></a>  
 </div>
 
 
 <div class="author">
 ![Xiaotao Shen](images/xiaotao.jpg)  
-**Xiaotao Shen**  
+**Dr. Xiaotao Shen**  
+Assistant Professor <br>
  Lee Kong Chian School of Medicine, Nanyang Technological University, Singapore  
-<a href="https://www.linkedin.com/in/xiaotao-shen/" target="_blank"><i class="fab fa-linkedin"></i></a> 
-<a href="https://www.shen-lab.org/" target="_blank"><i class="fas fa-globe"></i></a> 
-<a href="mailto:xiaotao.shen@outlook.com"><i class="fas fa-envelope"></i></a>  
+<a href="https://www.jaspershenlab.com/" target="_blank"><i class="fas fa-house"></i></a> 
+<a href="xiaotao.shen@outlook.com" target="_blank"><i class="fas fa-envelope"></i></a> 
+<a href="https://github.com/jaspershen"><i class="fab fa-github"></i></a>  
 </div>
 
 <!-- ... Similarly for other authors ... -->
