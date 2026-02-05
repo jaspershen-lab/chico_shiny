@@ -1,46 +1,36 @@
 ---
 title: "Authors"
 ---
-
-
 ```{css, echo=FALSE}
 .authors-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 每行 4 列 */
-  gap: 30px; /* 每个作者之间的空隙 */
+  grid-template-columns: repeat(5, 1fr); /* 每行 5 列 */
+  gap: 50px; /* 每个作者之间的空隙 */
   align-items: start;
 }
-
 .author {
   text-align: center;
 }
-
 .author img {
   border-radius: 50%;
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   object-fit: cover;
   display: block;
   margin: 0 auto 10px auto;
 }
-
 /* 在你的 css 代码块里加上这个 */
 h1 {
   margin-bottom: 50px; /* 标题下方的间距 */
 }
-
 ```
-
 <div class="authors-row">
-
 <div class="author">
 ![Xue Bai](images/baixue.jpg)  
 **Dr. Xue Bai**  
-
  School of Basic Medical Sciences <br>
  Chengdu University  
 </div>
-
 <div class="author">
 ![Jingxiang Zhang](images/jingxiang.jpg)  
 **Dr. Jingxiang Zhang**  
@@ -48,38 +38,57 @@ Research Fellow <br>
  Lee Kong Chian School of Medicine <br>
  Nanyang Technological University, Singapore
 </div>
-
-
+<div class="author">
+![Huan Liu](images/huanliu.jpg)  
+**Dr. Huan Liu**  
+ Postdoctoral Fellow <br>
+ Ruijin Hospital <br>
+ Shanghai Jiao Tong University
+</div>
+<div class="author">
+![Tao Wang](images/taowang.jpg)  
+**Dr. Tao Wang**  
+Lecturer <br>
+ School of Basic Medical Sciences <br>
+ Chengdu University
+</div>
+<div class="author">
+![Zhiying Huang](images/zhiying.jpg)  
+**Zhiying Huang**  
+Master Student <br>
+ College of Animal Science and Technology <br>
+ Shanxi Agricultural University
+</div>
+<div class="author">
+![Yijiang Liu](images/yijiang.jpg)  
+**Yijiang Liu**  
+ PhD Student <br>
+ School of Chemistry, Chemical Engineering and Biotechnology <br>
+ Nanyang Technological University, Singapore
+</div>
 <div class="author">
 ![Diyan Li](images/diyan.jpg)  
 **Dr. Diyan Li**  
-Professor <br>
+ Professor <br>
  School of Basic Medical Sciences <br>
  Chengdu University  
 </div>
-
-
 <div class="author">
 ![Hongxi Zhao](images/hongxi.jpg)  
 **Dr. Hongxi Zhao**  
-Associate Professor <br>
+ Associate Professor <br>
  The Tangdu Hospital of the Fourth Military Medical University (Tangdu Hospital)
 </div>
-
-
 <div class="author">
 ![Xiaotao Shen](images/xiaotao.jpg)  
 **Dr. Xiaotao Shen**  
-Assistant Professor <br>
- Lee Kong Chian School of Medicine, Nanyang Technological University, Singapore  
+ Assistant Professor <br>
+ Lee Kong Chian School of Medicine <br>
+ Nanyang Technological University, Singapore  
 <a href="https://www.jaspershenlab.com/" target="_blank"><i class="fas fa-house"></i></a> 
 <a href="xiaotao.shen@outlook.com" target="_blank"><i class="fas fa-envelope"></i></a> 
 <a href="https://github.com/jaspershen"><i class="fab fa-github"></i></a>  
 </div>
-
-<!-- ... Similarly for other authors ... -->
-
 </div>
-
 <!-- Add several blank lines using HTML -->
 <br><br><br><br><br>
