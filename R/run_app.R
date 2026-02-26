@@ -7,8 +7,8 @@
 #' @return A Shiny application object
 #' @export
 run_chico_shiny <- function(...) {
-
-  addResourcePath("www", system.file("www", package = "chicoshiny"))
+  register_chico_www()
+  register_chico_markdown_assets()
   
   shiny::shinyApp(
     ui = app_ui,

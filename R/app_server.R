@@ -8,41 +8,46 @@
 #' @importFrom stats wilcox.test kruskal.test
 #' @export
 app_server <- function(input, output, session) {
+  register_chico_markdown_assets()
+  data_env <- environment()
+  load_chico_data <- function(file_name) {
+    load(chico_system_file("data", file_name), envir = data_env)
+  }
   
   # =========================================================
   # 1. 加载数据 (原 global.R 内容)
   # 使用 system.file 定位 inst/data 下的文件
   # =========================================================
-  load(system.file("data/phylum_name.rda", package = "chicoshiny"))
-  load(system.file("data/class_name.rda", package = "chicoshiny"))
-  load(system.file("data/order_name.rda", package = "chicoshiny"))
-  load(system.file("data/family_name.rda", package = "chicoshiny"))
-  load(system.file("data/genus_name.rda", package = "chicoshiny"))
-  load(system.file("data/species_name.rda", package = "chicoshiny"))
+  load_chico_data("phylum_name.rda")
+  load_chico_data("class_name.rda")
+  load_chico_data("order_name.rda")
+  load_chico_data("family_name.rda")
+  load_chico_data("genus_name.rda")
+  load_chico_data("species_name.rda")
   
-  load(system.file("data/expression_data_phylum.rda", package = "chicoshiny"))
-  load(system.file("data/sample_info_phylum.rda", package = "chicoshiny"))
-  load(system.file("data/variable_info_phylum.rda", package = "chicoshiny"))
+  load_chico_data("expression_data_phylum.rda")
+  load_chico_data("sample_info_phylum.rda")
+  load_chico_data("variable_info_phylum.rda")
   
-  load(system.file("data/expression_data_class.rda", package = "chicoshiny"))
-  load(system.file("data/sample_info_class.rda", package = "chicoshiny"))
-  load(system.file("data/variable_info_class.rda", package = "chicoshiny"))
+  load_chico_data("expression_data_class.rda")
+  load_chico_data("sample_info_class.rda")
+  load_chico_data("variable_info_class.rda")
   
-  load(system.file("data/expression_data_order.rda", package = "chicoshiny"))
-  load(system.file("data/sample_info_order.rda", package = "chicoshiny"))
-  load(system.file("data/variable_info_order.rda", package = "chicoshiny"))
+  load_chico_data("expression_data_order.rda")
+  load_chico_data("sample_info_order.rda")
+  load_chico_data("variable_info_order.rda")
   
-  load(system.file("data/expression_data_family.rda", package = "chicoshiny"))
-  load(system.file("data/sample_info_family.rda", package = "chicoshiny"))
-  load(system.file("data/variable_info_family.rda", package = "chicoshiny"))
+  load_chico_data("expression_data_family.rda")
+  load_chico_data("sample_info_family.rda")
+  load_chico_data("variable_info_family.rda")
   
-  load(system.file("data/expression_data_genus.rda", package = "chicoshiny"))
-  load(system.file("data/sample_info_genus.rda", package = "chicoshiny"))
-  load(system.file("data/variable_info_genus.rda", package = "chicoshiny"))
+  load_chico_data("expression_data_genus.rda")
+  load_chico_data("sample_info_genus.rda")
+  load_chico_data("variable_info_genus.rda")
   
-  load(system.file("data/expression_data_species.rda", package = "chicoshiny"))
-  load(system.file("data/sample_info_species.rda", package = "chicoshiny"))
-  load(system.file("data/variable_info_species.rda", package = "chicoshiny"))
+  load_chico_data("expression_data_species.rda")
+  load_chico_data("sample_info_species.rda")
+  load_chico_data("variable_info_species.rda")
   
   # =========================================================
   # 2. 定义辅助函数和颜色常量
@@ -68,14 +73,32 @@ app_server <- function(input, output, session) {
   
   group_levels <- c("Negative", "Positive", "Low_risk", "High_risk", "Non-Persistent", "Persistent")
   
+  selected_group_var <- function(group_type) {
+    switch(
+      group_type,
+      "Affect or not"  = "Affect",
+      "HPV risk"       = "risk",
+      "HPV persistent" = "persistent",
+      "Affect"
+    )
+  }
+  
+  selected_method <- function() {
+    if (is.null(input$display_method) || !nzchar(input$display_method)) {
+      "single_taxon_boxplot"
+    } else {
+      input$display_method
+    }
+  }
+  
   # =========================================================
   # 3. Server 核心逻辑
   # =========================================================
   
   output$aboutContent <- renderUI({
     # 修正路径：使用 system.file 读取 inst/markdown 下的文件
-    html_path <- system.file("markdown/about.html", package = "chicoshiny")
-    if(html_path != "") {
+    html_path <- chico_system_file("markdown", "about.html", must_exist = FALSE)
+    if (file.exists(html_path)) {
       includeHTML(html_path)
     } else {
       h3("File markdown/about.html not found.")
@@ -83,12 +106,150 @@ app_server <- function(input, output, session) {
   })
   
   output$authorContent <- renderUI({
-    html_path <- system.file("markdown/authors.html", package = "chicoshiny")
-    if(html_path != "") {
+    html_path <- chico_system_file("markdown", "authors.html", must_exist = FALSE)
+    if (file.exists(html_path)) {
       includeHTML(html_path)
     } else {
       h3("File markdown/authors.html not found.")
     }
+  })
+
+  output$vizEditorialSummary <- renderUI({
+    or_else <- function(x, y) {
+      if (is.null(x) || length(x) == 0) y else x
+    }
+
+    selected_groups <- or_else(input$group, character(0))
+    group_text <- if (length(selected_groups) > 0) {
+      paste(selected_groups, collapse = ", ")
+    } else {
+      "None selected"
+    }
+
+    current_method <- selected_method()
+    inferred_test <- if (current_method == "topn_stacked_bar") {
+      "No hypothesis test (compositional comparison via stacked bar across selected groups)"
+    } else if (length(selected_groups) < 2) {
+      "Selection incomplete (need at least two groups)"
+    } else if (length(selected_groups) == 2) {
+      "Wilcoxon rank-sum test (two-group comparison)"
+    } else {
+      "Kruskal-Wallis test (multi-group comparison)"
+    }
+    
+    method_label <- if (current_method == "topn_stacked_bar") {
+      "Top-N taxa stacked bar"
+    } else {
+      "Single taxon distribution"
+    }
+    top_n_label <- if (current_method == "topn_stacked_bar") {
+      as.character(if (is.null(input$top_n_taxa)) 10 else input$top_n_taxa)
+    } else {
+      "Not used"
+    }
+
+    last_run_note <- "Generate plot to create the latest filtered dataset summary."
+    sample_count <- "Not generated yet"
+    observed_groups <- "Not generated yet"
+
+    if (!is.null(input$generate_plot) && isTRUE(input$generate_plot > 0)) {
+      if (current_method == "topn_stacked_bar") {
+        comp_try <- tryCatch(topn_composition_df(), error = function(e) NULL)
+        if (!is.null(comp_try) && nrow(comp_try) > 0) {
+          n_samples_attr <- attr(comp_try, "n_samples")
+          sample_count <- if (is.null(n_samples_attr) || length(n_samples_attr) == 0) "Unknown" else as.character(n_samples_attr)
+          observed_groups <- attr(comp_try, "observed_groups")
+          if (is.null(observed_groups) || !length(observed_groups)) observed_groups <- "Unknown"
+          if (length(observed_groups) > 1) observed_groups <- paste(observed_groups, collapse = ", ")
+          last_run_note <- paste0(
+            "Latest Top-N composition comparison used ", sample_count,
+            " samples and summarized ", length(unique(as.character(comp_try$taxon_display))),
+            " taxa segments (including Others when applicable)."
+          )
+        } else {
+          last_run_note <- "Latest Top-N generate attempt did not return a valid comparison. Select at least two groups and try again."
+        }
+      } else {
+        df_try <- tryCatch(microbiome_df(), error = function(e) NULL)
+        if (!is.null(df_try) && nrow(df_try) > 0) {
+          sample_count <- as.character(nrow(df_try))
+          observed_groups <- paste(unique(as.character(stats::na.omit(df_try$group))), collapse = ", ")
+          if (!nzchar(observed_groups)) observed_groups <- "No valid groups"
+          last_run_note <- paste0(
+            "Latest generated dataset contains ", nrow(df_try),
+            " samples across ", length(unique(stats::na.omit(df_try$group))), " groups."
+          )
+        } else {
+          last_run_note <- "Latest generate attempt did not return a valid dataset. Adjust filters and try again."
+        }
+      }
+    }
+
+    tags$div(
+      tags$p(
+        class = "summary-prose",
+        "The current analytical setup focuses on ",
+        tags$strong(or_else(input$bacteria_level, "an unspecified level")),
+        " level abundance for ",
+        tags$strong(or_else(input$bacteria_name, "an unspecified bacterium")),
+        ", grouped by ",
+        tags$strong(or_else(input$group_type, "an unspecified cohort rule")),
+        ", using the ",
+        tags$strong(method_label),
+        " display mode. Based on the selected configuration, the app will use ",
+        tags$strong(inferred_test),
+        " when a valid dataset is generated."
+      ),
+      tags$blockquote(class = "summary-quote", last_run_note),
+      tags$div(
+        class = "summary-grid",
+        tags$div(
+          class = "summary-item",
+          tags$div(class = "summary-item__label", "Current level"),
+          tags$div(class = "summary-item__value", or_else(input$bacteria_level, "NA"))
+        ),
+        tags$div(
+          class = "summary-item",
+          tags$div(class = "summary-item__label", "Selected bacterium"),
+          tags$div(class = "summary-item__value", or_else(input$bacteria_name, "NA"))
+        ),
+        tags$div(
+          class = "summary-item",
+          tags$div(class = "summary-item__label", "Group type"),
+          tags$div(class = "summary-item__value", or_else(input$group_type, "NA"))
+        ),
+        tags$div(
+          class = "summary-item",
+          tags$div(class = "summary-item__label", "Selected groups"),
+          tags$div(class = "summary-item__value", group_text)
+        ),
+        tags$div(
+          class = "summary-item",
+          tags$div(class = "summary-item__label", "Display method"),
+          tags$div(class = "summary-item__value", method_label)
+        ),
+        tags$div(
+          class = "summary-item",
+          tags$div(class = "summary-item__label", "Inferred method"),
+          tags$div(class = "summary-item__value", inferred_test)
+        ),
+        tags$div(
+          class = "summary-item",
+          tags$div(class = "summary-item__label", "Top N taxa"),
+          tags$div(class = "summary-item__value", top_n_label)
+        ),
+        tags$div(
+          class = "summary-item",
+          tags$div(class = "summary-item__label", "Last generated samples"),
+          tags$div(class = "summary-item__value", sample_count)
+        ),
+        tags$div(
+          class = "summary-item",
+          tags$div(class = "summary-item__label", "Observed groups (last run)"),
+          tags$div(class = "summary-item__value", observed_groups)
+        )
+      )
+    )
   })
   
   # 动态更新 Bacteria Name
@@ -160,13 +321,7 @@ app_server <- function(input, output, session) {
       stringsAsFactors = FALSE
     )
     
-    group_var <- switch(
-      input$group_type,
-      "Affect or not"  = "Affect",
-      "HPV risk"       = "risk",
-      "HPV persistent" = "persistent",
-      "Affect"          
-    )
+    group_var <- selected_group_var(input$group_type)
     
     sample_info <- microbiome_dataset$sample_info %>%
       dplyr::select(sample_id, !!sym(group_var))
@@ -188,6 +343,77 @@ app_server <- function(input, output, session) {
     )
     
     df
+  })
+  
+  topn_composition_df <- eventReactive(input$generate_plot, {
+    req(input$bacteria_level, input$group_type, input$group)
+    validate(need(length(input$group) >= 2, "Stacked bar comparison requires at least two selected groups."))
+    
+    microbiome_dataset <- get_level_dataset(input$bacteria_level)
+    req(!is.null(microbiome_dataset))
+    
+    group_var <- selected_group_var(input$group_type)
+    
+    sample_info <- microbiome_dataset$sample_info %>%
+      dplyr::select(sample_id, !!sym(group_var))
+    colnames(sample_info)[2] <- "group"
+    
+    sample_info <- sample_info %>%
+      dplyr::filter(group %in% input$group)
+    
+    common_samples <- intersect(colnames(microbiome_dataset$expression_data), sample_info$sample_id)
+    validate(need(length(common_samples) > 0, "No overlapping samples found for selected groups."))
+    
+    sample_info <- sample_info %>%
+      dplyr::filter(sample_id %in% common_samples)
+    
+    observed_groups <- unique(as.character(stats::na.omit(sample_info$group)))
+    validate(need(length(observed_groups) >= 2, "Please select at least two groups with available data."))
+    
+    expr <- microbiome_dataset$expression_data[, sample_info$sample_id, drop = FALSE]
+    sample_info$group <- as.character(sample_info$group)
+    
+    top_n <- suppressWarnings(as.integer(input$top_n_taxa))
+    if (is.na(top_n) || top_n < 2) top_n <- 10L
+    top_n <- min(top_n, nrow(expr))
+    
+    group_means_list <- lapply(unique(sample_info$group), function(g) {
+      cols <- sample_info$sample_id[sample_info$group == g]
+      vals <- if (length(cols) == 1) {
+        as.numeric(expr[, cols, drop = TRUE])
+      } else {
+        rowMeans(expr[, cols, drop = FALSE], na.rm = TRUE)
+      }
+      data.frame(
+        taxon = rownames(expr),
+        group = g,
+        abundance = as.numeric(vals),
+        stringsAsFactors = FALSE
+      )
+    })
+    comp_df <- do.call(rbind, group_means_list)
+    
+    overall_rank <- stats::aggregate(abundance ~ taxon, data = comp_df, FUN = mean, na.rm = TRUE)
+    overall_rank <- overall_rank[order(overall_rank$abundance, decreasing = TRUE), , drop = FALSE]
+    top_taxa <- head(overall_rank$taxon, top_n)
+    
+    comp_df$taxon_display <- ifelse(comp_df$taxon %in% top_taxa, comp_df$taxon, "Others")
+    comp_df <- stats::aggregate(abundance ~ group + taxon_display, data = comp_df, FUN = sum, na.rm = TRUE)
+    
+    totals <- stats::aggregate(abundance ~ group, data = comp_df, FUN = sum, na.rm = TRUE)
+    names(totals)[2] <- "group_total"
+    comp_df <- merge(comp_df, totals, by = "group", all.x = TRUE, sort = FALSE)
+    comp_df$proportion <- ifelse(comp_df$group_total > 0, comp_df$abundance / comp_df$group_total, NA_real_)
+    
+    tax_levels <- c(top_taxa, "Others")
+    tax_levels <- tax_levels[tax_levels %in% unique(comp_df$taxon_display)]
+    comp_df$taxon_display <- factor(comp_df$taxon_display, levels = rev(tax_levels))
+    comp_df$group <- factor(comp_df$group, levels = group_levels)
+    
+    comp_df <- comp_df[order(comp_df$group, comp_df$taxon_display), , drop = FALSE]
+    attr(comp_df, "n_samples") <- length(unique(sample_info$sample_id))
+    attr(comp_df, "observed_groups") <- unique(sample_info$group)
+    comp_df
   })
   
   # 绘图逻辑
@@ -225,8 +451,62 @@ app_server <- function(input, output, session) {
     return(p)
   })
   
+  make_topn_stacked_plot <- eventReactive(input$generate_plot, {
+    comp_df <- topn_composition_df()
+    req(nrow(comp_df) > 0)
+    
+    top_n <- suppressWarnings(as.integer(input$top_n_taxa))
+    if (is.na(top_n) || top_n < 2) top_n <- 10L
+
+    tax_levels <- levels(comp_df$taxon_display)
+    if (is.null(tax_levels)) tax_levels <- unique(as.character(comp_df$taxon_display))
+    tax_levels <- as.character(tax_levels)
+
+    non_other_taxa <- setdiff(tax_levels, "Others")
+    n_taxa <- length(non_other_taxa)
+
+    palette_non_other <- if (n_taxa == 0) {
+      character(0)
+    } else if (exists("hcl.colors", where = asNamespace("grDevices"), mode = "function")) {
+      grDevices::hcl.colors(n_taxa, palette = "Dynamic")
+    } else if (n_taxa <= 12) {
+      RColorBrewer::brewer.pal(max(3, n_taxa), "Set3")[seq_len(n_taxa)]
+    } else {
+      grDevices::colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(n_taxa)
+    }
+
+    fill_values <- setNames(palette_non_other, non_other_taxa)
+    if ("Others" %in% tax_levels) {
+      fill_values <- c(fill_values, Others = "#b8b2a8")
+    }
+    
+    p <- ggplot(comp_df, aes(x = group, y = proportion, fill = taxon_display)) +
+      geom_col(width = 0.65, color = "white", size = 0.2) +
+      scale_fill_manual(values = fill_values, drop = FALSE) +
+      labs(
+        x = input$group_type,
+        y = "Mean relative abundance (proportion)",
+        fill = "Taxa",
+        title = paste0(input$bacteria_level, " - Top ", top_n, " taxa composition")
+      ) +
+      theme_bw() +
+      theme(
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle = 20, hjust = 1),
+        legend.position = "right",
+        legend.key.height = grid::unit(0.45, "cm")
+      )
+    
+    p
+  })
+  
   output$box_plot <- renderPlotly({
-    p <- make_box_plot()
+    p <- if (selected_method() == "topn_stacked_bar") {
+      make_topn_stacked_plot()
+    } else {
+      make_box_plot()
+    }
+    
     ggplotly(p) %>%
       layout(
         autosize = TRUE,
@@ -239,42 +519,53 @@ app_server <- function(input, output, session) {
   
   # 统计表逻辑
   make_stats_table <- reactive({
-    df <- microbiome_df()
-    req(nrow(df) > 0)
-    
-    groups <- unique(df[["group"]])
-    
-    # two groups：Wilcoxon rank-sum test
-    if (length(groups) == 2) {
-      g1 <- groups[1]
-      g2 <- groups[2]
-      x  <- df$abundance[df[["group"]] == g1]
-      y  <- df$abundance[df[["group"]] == g2]
+    if (selected_method() == "topn_stacked_bar") {
+      comp_df <- topn_composition_df()
+      req(nrow(comp_df) > 0)
       
-      wt <- tryCatch(
-        wilcox.test(x, y),
-        error = function(e) NULL
-      )
-      
-      if (is.null(wt)) {
-        data.frame(Test = "Wilcoxon rank-sum", Group1 = g1, Group2 = g2, p_value = NA_real_, stringsAsFactors = FALSE)
-      } else {
-        data.frame(Test = "Wilcoxon rank-sum", Group1 = g1, Group2 = g2, p_value = wt$p.value, stringsAsFactors = FALSE)
-      }
-      
+      out <- comp_df[, c("group", "taxon_display", "abundance", "proportion"), drop = FALSE]
+      colnames(out) <- c("Group", "Taxon", "Mean_Abundance", "Proportion")
+      out$Proportion <- round(out$Proportion, 4)
+      out$Mean_Abundance <- round(out$Mean_Abundance, 6)
+      out
     } else {
-      # mulit-group：Kruskal–Wallis
-      kt <- tryCatch(
-        kruskal.test(abundance ~ group, data = df),
-        error = function(e) NULL
-      )
+      df <- microbiome_df()
+      req(nrow(df) > 0)
       
-      data.frame(
-        Test    = "Kruskal-Wallis",
-        Groups  = paste(sort(groups), collapse = ", "),
-        p_value = if (is.null(kt)) NA_real_ else kt$p.value,
-        stringsAsFactors = FALSE
-      )
+      groups <- unique(df[["group"]])
+      
+      # two groups：Wilcoxon rank-sum test
+      if (length(groups) == 2) {
+        g1 <- groups[1]
+        g2 <- groups[2]
+        x  <- df$abundance[df[["group"]] == g1]
+        y  <- df$abundance[df[["group"]] == g2]
+        
+        wt <- tryCatch(
+          wilcox.test(x, y),
+          error = function(e) NULL
+        )
+        
+        if (is.null(wt)) {
+          data.frame(Test = "Wilcoxon rank-sum", Group1 = g1, Group2 = g2, p_value = NA_real_, stringsAsFactors = FALSE)
+        } else {
+          data.frame(Test = "Wilcoxon rank-sum", Group1 = g1, Group2 = g2, p_value = wt$p.value, stringsAsFactors = FALSE)
+        }
+        
+      } else {
+        # mulit-group：Kruskal–Wallis
+        kt <- tryCatch(
+          kruskal.test(abundance ~ group, data = df),
+          error = function(e) NULL
+        )
+        
+        data.frame(
+          Test    = "Kruskal-Wallis",
+          Groups  = paste(sort(groups), collapse = ", "),
+          p_value = if (is.null(kt)) NA_real_ else kt$p.value,
+          stringsAsFactors = FALSE
+        )
+      }
     }
   })
   
@@ -289,13 +580,19 @@ app_server <- function(input, output, session) {
       paste("plot-", Sys.Date(), ".", tolower(input$filetype), sep = "")
     },
     content = function(file) {
+      current_plot <- if (selected_method() == "topn_stacked_bar") {
+        make_topn_stacked_plot()
+      } else {
+        make_box_plot()
+      }
+
       if (input$filetype == "PNG") {
         png(file, width = input$width * 96, height = input$height * 96)
-        print(make_box_plot())
+        print(current_plot)
         dev.off()
       } else if (input$filetype == "PDF") {
         pdf(file, width = input$width, height = input$height)
-        print(make_box_plot())
+        print(current_plot)
         dev.off()
       }
     }
