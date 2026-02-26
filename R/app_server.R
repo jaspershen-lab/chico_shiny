@@ -114,6 +114,175 @@ app_server <- function(input, output, session) {
     }
   })
 
+  participant_info_df <- reactive({
+    df <- sample_info_genus
+    req(is.data.frame(df))
+
+    keep_cols <- c("sample_id", "Age", "Affect", "virus", "virus_number", "risk", "persistent")
+    keep_cols <- keep_cols[keep_cols %in% names(df)]
+    df <- df[, keep_cols, drop = FALSE]
+
+    if ("sample_id" %in% names(df)) df$sample_id <- as.character(df$sample_id)
+    if ("Age" %in% names(df)) df$Age <- suppressWarnings(as.numeric(as.character(df$Age)))
+    df
+  })
+
+  count_categorical <- function(df, col, preferred_order = NULL) {
+    validate(need(col %in% names(df), paste("Column not found:", col)))
+
+    vals <- as.character(df[[col]])
+    vals[is.na(vals) | !nzchar(trimws(vals))] <- "Missing"
+
+    out <- as.data.frame(table(vals), stringsAsFactors = FALSE)
+    names(out) <- c("label_raw", "n")
+    out$n <- as.integer(out$n)
+
+    if (!is.null(preferred_order)) {
+      ord <- c(preferred_order, setdiff(out$label_raw, preferred_order))
+      out$label_raw <- factor(out$label_raw, levels = ord)
+      out <- out[order(out$label_raw), , drop = FALSE]
+      out$label_raw <- as.character(out$label_raw)
+    } else {
+      out <- out[order(out$n, decreasing = TRUE), , drop = FALSE]
+    }
+
+    out$label <- gsub("_", " ", out$label_raw, fixed = TRUE)
+    out
+  }
+
+  make_hover_expand_pie <- function(count_df, title, colors = NULL) {
+    req(nrow(count_df) > 0)
+
+    if (is.null(colors)) {
+      cols <- grDevices::hcl.colors(max(3, nrow(count_df)), "Dynamic")
+      colors <- setNames(cols[seq_len(nrow(count_df))], count_df$label_raw)
+    }
+    marker_colors <- unname(colors[count_df$label_raw])
+    marker_colors[is.na(marker_colors)] <- grDevices::hcl.colors(sum(is.na(marker_colors)), "Dynamic")
+
+    p <- plot_ly(
+      data = count_df,
+      labels = ~label,
+      values = ~n,
+      type = "pie",
+      sort = FALSE,
+      textinfo = "label+percent",
+      hovertemplate = "<b>%{label}</b><br>Count: %{value}<br>Percent: %{percent}<extra></extra>",
+      marker = list(colors = marker_colors, line = list(color = "rgba(255,255,255,0.75)", width = 1)),
+      pull = rep(0, nrow(count_df))
+    ) %>%
+      layout(
+        title = list(text = title, x = 0.02, xanchor = "left", font = list(size = 18)),
+        margin = list(l = 10, r = 10, t = 50, b = 10),
+        showlegend = TRUE,
+        legend = list(orientation = "h", y = -0.08, x = 0, font = list(size = 11))
+      )
+
+    htmlwidgets::onRender(
+      p,
+      "
+      function(el, x) {
+        var gd = document.getElementById(el.id);
+        if (!gd || gd.__chicoHoverPieBound) return;
+        gd.__chicoHoverPieBound = true;
+        function setPull(activeIndex) {
+          var n = 0;
+          if (gd.data && gd.data[0] && gd.data[0].labels) n = gd.data[0].labels.length;
+          if (!n) return;
+          var pull = Array(n).fill(0);
+          if (typeof activeIndex === 'number' && activeIndex >= 0 && activeIndex < n) {
+            pull[activeIndex] = 0.09;
+          }
+          Plotly.restyle(gd, {pull: [pull]}, [0]);
+        }
+        gd.on('plotly_hover', function(e) {
+          if (e && e.points && e.points.length) setPull(e.points[0].pointNumber);
+        });
+        gd.on('plotly_unhover', function() { setPull(null); });
+      }
+      "
+    )
+  }
+
+  output$participantAgePlot <- renderPlotly({
+    df <- participant_info_df()
+    validate(need("Age" %in% names(df), "Column `Age` not found in sample_info_genus."))
+
+    age_df <- df[!is.na(df$Age), c("Age", intersect(c("sample_id", "Affect", "risk"), names(df))), drop = FALSE]
+    validate(need(nrow(age_df) > 0, "No valid age values available."))
+
+    plot_ly(
+      age_df,
+      x = ~Age,
+      type = "histogram",
+      nbinsx = min(30, max(10, floor(sqrt(nrow(age_df))))),
+      marker = list(color = "rgba(176,67,47,0.78)", line = list(color = "rgba(255,255,255,0.85)", width = 1)),
+      hovertemplate = "Age: %{x}<br>Count: %{y}<extra></extra>"
+    ) %>%
+      layout(
+        title = list(text = "Age Distribution", x = 0.02, xanchor = "left", font = list(size = 18)),
+        xaxis = list(title = "Age", showgrid = TRUE, gridcolor = "grey88"),
+        yaxis = list(title = "Participant count", showgrid = TRUE, gridcolor = "grey88"),
+        bargap = 0.04,
+        margin = list(l = 55, r = 20, t = 52, b = 55),
+        plot_bgcolor = "white",
+        paper_bgcolor = "white"
+      )
+  })
+
+  output$affectPiePlot <- renderPlotly({
+    df <- participant_info_df()
+    cnt <- count_categorical(df, "Affect", preferred_order = c("Negative", "Positive"))
+    make_hover_expand_pie(
+      cnt,
+      "Affect Group",
+      colors = c("Negative" = "#2ca02c", "Positive" = "#ff7f0e", "Missing" = "#b8b2a8")
+    )
+  })
+
+  output$riskPiePlot <- renderPlotly({
+    df <- participant_info_df()
+    cnt <- count_categorical(df, "risk", preferred_order = c("Negative", "Low_risk", "High_risk"))
+    make_hover_expand_pie(
+      cnt,
+      "HPV Risk Group",
+      colors = c("Negative" = "#2ca02c", "Low_risk" = "#1f77b4", "High_risk" = "#d62728", "Missing" = "#b8b2a8")
+    )
+  })
+
+  output$persistentPiePlot <- renderPlotly({
+    df <- participant_info_df()
+    cnt <- count_categorical(df, "persistent", preferred_order = c("Non-Persistent", "Persistent", "No-follow-up"))
+    make_hover_expand_pie(
+      cnt,
+      "HPV Persistent Group",
+      colors = c(
+        "Non-Persistent" = "#9467bd",
+        "Persistent" = "#8c564b",
+        "No-follow-up" = "#7f8c8d",
+        "Missing" = "#b8b2a8"
+      )
+    )
+  })
+
+  output$participantInfoTable <- renderDT({
+    df <- participant_info_df()
+    keep_cols <- c("sample_id", "Age", "Affect", "virus", "virus_number", "risk", "persistent")
+    keep_cols <- keep_cols[keep_cols %in% names(df)]
+    validate(need(length(keep_cols) > 0, "No requested participant columns found."))
+
+    datatable(
+      df[, keep_cols, drop = FALSE],
+      rownames = FALSE,
+      options = list(
+        pageLength = 15,
+        lengthMenu = c(10, 15, 30, 50),
+        scrollX = TRUE,
+        autoWidth = TRUE
+      )
+    )
+  })
+
   output$vizEditorialSummary <- renderUI({
     or_else <- function(x, y) {
       if (is.null(x) || length(x) == 0) y else x
@@ -425,7 +594,16 @@ app_server <- function(input, output, session) {
       geom_boxplot(outlier.shape = NA, aes(color = group), show.legend = FALSE) +
       geom_jitter(
         width = 0.2, alpha = 0.6, shape = 21, size = 3,
-        color = "black", aes(fill = group), show.legend = FALSE
+        color = "black",
+        aes(
+          fill = group,
+          text = paste0(
+            "sample_id: ", sample_id,
+            "<br>group: ", group,
+            "<br>abundance: ", signif(abundance, 6)
+          )
+        ),
+        show.legend = FALSE
       ) +
       labs(
         x     = input$group_type,
@@ -506,8 +684,25 @@ app_server <- function(input, output, session) {
     } else {
       make_box_plot()
     }
-    
-    ggplotly(p) %>%
+
+    gp <- if (selected_method() == "topn_stacked_bar") {
+      ggplotly(p)
+    } else {
+      ggplotly(p, tooltip = "text")
+    }
+
+    # ggplotly may re-introduce boxplot outlier markers even when ggplot2
+    # uses outlier.shape = NA, so disable them explicitly on box traces.
+    if (selected_method() != "topn_stacked_bar" && !is.null(gp$x$data)) {
+      for (i in seq_along(gp$x$data)) {
+        trace_type <- gp$x$data[[i]]$type
+        if (isTRUE(identical(trace_type, "box"))) {
+          gp$x$data[[i]]$boxpoints <- FALSE
+        }
+      }
+    }
+
+    gp %>%
       layout(
         autosize = TRUE,
         plot_bgcolor  = "white",

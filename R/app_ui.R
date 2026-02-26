@@ -151,11 +151,12 @@ app_ui <- function() {
 
   dashboardPage(
     skin = "blue",
+    title = "CHICO STUDY",
     dashboardHeader(
       title = tags$div(
         class = "masthead-brand",
-        tags$span(class = "masthead-brand__name", "CHICO REVIEW"),
-        tags$span(class = "masthead-brand__tag", "Clinical HPV microbiome atlas")
+        tags$span(class = "masthead-brand__name", "CHICO STUDY"),
+        tags$span(class = "masthead-brand__tag", "HPV Cervical Microbiome Atlas")
       ),
       titleWidth = 340
     ),
@@ -164,6 +165,7 @@ app_ui <- function() {
       sidebarMenu(
         id = "main_tabs",
         menuItem("About", tabName = "about", icon = icon("book")),
+        menuItem("Data Information", tabName = "data_info", icon = icon("table")),
         menuItem("Data Visualization", tabName = "viz", icon = icon("area-chart")),
         menuItem("Authors", tabName = "authors", icon = icon("users"))
       )
@@ -212,6 +214,54 @@ app_ui <- function() {
           color: #fff;
           box-shadow: 0 6px 14px rgba(126,42,32,0.24);
         }
+        .data-info-tabs {
+          background: transparent;
+        }
+        .data-info-tabs > .nav {
+          border-bottom: 1px solid rgba(30,26,23,0.10);
+          margin-bottom: 14px;
+        }
+        .data-info-tabs > .nav > li > a {
+          border: none !important;
+          border-radius: 999px;
+          color: #514a43;
+          font-weight: 700;
+          letter-spacing: .03em;
+          padding: 8px 12px;
+          margin-right: 8px;
+          background: transparent;
+        }
+        .data-info-tabs > .nav > li.active > a,
+        .data-info-tabs > .nav > li.active > a:hover,
+        .data-info-tabs > .nav > li.active > a:focus {
+          color: #fff;
+          background: linear-gradient(135deg, #8a3027, #b0432f);
+          box-shadow: 0 8px 16px rgba(126,42,32,0.20);
+        }
+        .data-info-tabs > .tab-content {
+          padding-top: 2px;
+        }
+        .data-info-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+          align-items: start;
+        }
+        .data-info-grid__wide {
+          grid-column: 1 / -1;
+        }
+        .data-info-plot {
+          border-radius: 14px;
+          background: rgba(255,255,255,0.78);
+          border: 1px solid rgba(30,26,23,0.08);
+          padding: 10px;
+        }
+        .data-info-note {
+          margin: 0 0 10px;
+          color: #5a524a;
+          font-size: 13px;
+          line-height: 1.55;
+        }
         body.theme-dark { color-scheme: dark; }
         body.theme-dark .content-wrapper,
         body.theme-dark .right-side {
@@ -234,6 +284,13 @@ app_ui <- function() {
         }
         body.theme-dark .theme-switcher__btn { color: #e8ded1; }
         body.theme-dark .theme-switcher__btn:hover { background: rgba(255,255,255,0.07); }
+        body.theme-dark .data-info-tabs > .nav { border-bottom-color: rgba(255,255,255,0.08); }
+        body.theme-dark .data-info-tabs > .nav > li > a { color: #d5c9bb; }
+        body.theme-dark .data-info-plot {
+          background: rgba(28,24,22,0.78);
+          border-color: rgba(255,255,255,0.08);
+        }
+        body.theme-dark .data-info-note { color: #cbbfb1; }
         body.theme-dark .ed-stat,
         body.theme-dark .article-shell,
         body.theme-dark .editor-panel,
@@ -326,7 +383,68 @@ app_ui <- function() {
         body.theme-dark .dataTables_wrapper table.dataTable tbody td { color: #ddd0c0; }
         body.theme-dark .dataTables_wrapper table.dataTable tbody tr:hover { background: rgba(176,67,47,0.08); }
         body.theme-dark .dock-footer__links a:hover { background: rgba(255,255,255,0.06); }
+
+        body.app-loading { overflow: hidden; }
+        body.app-loading .theme-switcher { pointer-events: none; }
+
+        .global-loading-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 5000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          background: rgba(10, 9, 8, 0.34);
+          backdrop-filter: blur(6px);
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+          transition: opacity .16s ease, visibility .16s ease;
+        }
+        .global-loading-overlay.is-visible {
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
+        }
+        .global-loading-overlay__panel {
+          min-width: 260px;
+          max-width: 92vw;
+          padding: 18px 18px 16px;
+          border-radius: 18px;
+          border: 1px solid rgba(255,255,255,0.14);
+          background: rgba(24, 21, 19, 0.92);
+          color: #f2e9dd;
+          box-shadow: 0 18px 40px rgba(0,0,0,0.34);
+          display: grid;
+          justify-items: center;
+          gap: 10px;
+          text-align: center;
+        }
+        .global-loading-overlay__spinner {
+          width: 42px;
+          height: 42px;
+          border-radius: 999px;
+          border: 3px solid rgba(255,255,255,0.18);
+          border-top-color: #d4553b;
+          border-right-color: #b0432f;
+          animation: chicoSpin .9s linear infinite;
+        }
+        .global-loading-overlay__title {
+          font-weight: 700;
+          letter-spacing: .06em;
+          text-transform: uppercase;
+          font-size: 12px;
+        }
+        .global-loading-overlay__text {
+          margin: 0;
+          font-size: 13px;
+          line-height: 1.55;
+          color: rgba(242,233,221,0.86);
+        }
+        @keyframes chicoSpin { to { transform: rotate(360deg); } }
         @media (max-width: 991px) {
+          .data-info-grid { grid-template-columns: 1fr; }
           .theme-switcher {
             top: 80px;
             right: 12px;
@@ -339,6 +457,20 @@ app_ui <- function() {
         (function() {
           var STORAGE_KEY = 'chico_theme_mode';
           var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+          var pendingGenerate = false;
+          function loadingOverlay() { return document.getElementById('globalLoadingOverlay'); }
+          function showLoadingOverlay() {
+            var el = loadingOverlay();
+            if (!el) return;
+            el.classList.add('is-visible');
+            if (document.body) document.body.classList.add('app-loading');
+          }
+          function hideLoadingOverlay() {
+            var el = loadingOverlay();
+            if (!el) return;
+            el.classList.remove('is-visible');
+            if (document.body) document.body.classList.remove('app-loading');
+          }
           function getStoredMode() {
             try {
               var m = window.localStorage.getItem(STORAGE_KEY);
@@ -373,6 +505,11 @@ app_ui <- function() {
             applyMode(mode);
           }
           function onClick(ev) {
+            var genBtn = ev.target.closest && ev.target.closest('#generate_plot');
+            if (genBtn) {
+              pendingGenerate = true;
+              showLoadingOverlay();
+            }
             var btn = ev.target.closest('.theme-switcher__btn[data-theme-mode]');
             if (!btn) return;
             setMode(btn.getAttribute('data-theme-mode'));
@@ -380,6 +517,22 @@ app_ui <- function() {
           function init() {
             applyMode(getStoredMode());
             document.addEventListener('click', onClick);
+            var onShinyIdle = function() {
+              if (!pendingGenerate) return;
+              pendingGenerate = false;
+              hideLoadingOverlay();
+            };
+            var onShinyDisconnected = function() {
+              pendingGenerate = false;
+              hideLoadingOverlay();
+            };
+            if (window.jQuery) {
+              window.jQuery(document).on('shiny:idle', onShinyIdle);
+              window.jQuery(document).on('shiny:disconnected', onShinyDisconnected);
+            } else {
+              document.addEventListener('shiny:idle', onShinyIdle);
+              document.addEventListener('shiny:disconnected', onShinyDisconnected);
+            }
             if (!media) return;
             var onSystemChange = function() {
               if (getStoredMode() === 'auto') applyMode('auto');
@@ -399,6 +552,21 @@ app_ui <- function() {
         tags$button(type = "button", class = "theme-switcher__btn", `data-theme-mode` = "dark", "Dark"),
         tags$button(type = "button", class = "theme-switcher__btn", `data-theme-mode` = "auto", "Automatic")
       ),
+      tags$div(
+        id = "globalLoadingOverlay",
+        class = "global-loading-overlay",
+        `aria-live` = "polite",
+        `aria-busy` = "true",
+        tags$div(
+          class = "global-loading-overlay__panel",
+          tags$div(class = "global-loading-overlay__spinner", `aria-hidden` = "true"),
+          tags$div(class = "global-loading-overlay__title", "Generating Plot"),
+          tags$p(
+            class = "global-loading-overlay__text",
+            "Please wait while the figure and summary table are being updated."
+          )
+        )
+      ),
 
       tabItems(
         tabItem(
@@ -406,22 +574,79 @@ app_ui <- function() {
           div(
             class = "page-wrap",
             editorial_hero(
-              section_label = "Feature",
-              title = "CHICO Study: Longitudinal cervical microbiome-HPV atlas",
-              dek = "An editorial-style interface for the CHICO manuscript draft, combining cohort context, microbiome comparison modules, and manuscript-linked contributor information.",
-              meta = c("Cohort context", "Manuscript summary", "Interactive modules"),
+              section_label = "",
+              title = "Chengdu and Xi’an HPV Infection and Cervical Microbiome (CHICO) Study",
+              dek = "",
+              meta = c(),
               tone = "ink"
             ),
-            stat_strip(list(
-              list(label = "Pages", value = "3", note = "About, Visualization, Authors"),
-              list(label = "Interface", value = "Editorial", note = "Magazine-inspired visual hierarchy"),
-              list(label = "Purpose", value = "Explore", note = "Study story + data comparison")
-            )),
             article_shell(
               title = "Study Background",
-              kicker = "Section 01",
               badge = "About",
               body = uiOutput("aboutContent")
+            )
+          )
+        ),
+
+        tabItem(
+          tabName = "data_info",
+          div(
+            class = "page-wrap",
+            editorial_hero(
+              section_label = "",
+              title = "Participant information overview and table browser",
+              dek = "",
+              meta = c(),
+              tone = "ink"
+            ),
+            tags$section(
+              class = "feature-card",
+              tags$header(
+                class = "feature-card__head",
+                tags$div(class = "feature-card__kicker", ""),
+                tags$h3(class = "feature-card__title", ""),
+                tags$p(
+                  class = "feature-card__sub",
+                  ""
+                )
+              ),
+              tags$div(class = "feature-card__rule"),
+              tags$div(
+                class = "feature-card__body",
+                div(
+                  class = "data-info-tabs",
+                  tabsetPanel(
+                    id = "data_info_subtabs",
+                    type = "tabs",
+                    tabPanel(
+                      "Summary",
+                      tags$p(
+                        class = "data-info-note",
+                        ""
+                      ),
+                      tags$div(
+                        class = "data-info-grid",
+                        tags$div(
+                          class = "data-info-grid__wide",
+                          tags$div(class = "data-info-plot", plotlyOutput("participantAgePlot", height = "320px"))
+                        ),
+                        tags$div(class = "data-info-plot", plotlyOutput("affectPiePlot", height = "300px")),
+                        tags$div(class = "data-info-plot", plotlyOutput("riskPiePlot", height = "300px")),
+                        tags$div(class = "data-info-grid__wide",
+                                 tags$div(class = "data-info-plot", plotlyOutput("persistentPiePlot", height = "320px")))
+                      )
+                    ),
+                    tabPanel(
+                      "Participant Table",
+                      tags$p(
+                        class = "data-info-note",
+                        "Displaying selected participant metadata columns from sample_info_genus: sample_id, Age, Affect, virus, virus_number, risk, persistent."
+                      ),
+                      tags$div(class = "table-frame", DTOutput("participantInfoTable"))
+                    )
+                  )
+                )
+              )
             )
           )
         ),
@@ -431,17 +656,12 @@ app_ui <- function() {
           div(
             class = "page-wrap",
             editorial_hero(
-              section_label = "Analysis Desk",
-              title = "Interactive microbiome comparison in an editorial layout",
-              dek = "Explore manuscript-relevant cervical microbiome comparisons across HPV status, HPV risk, and persistence groupings using single-taxon distributions or Top-N compositional stacked bars.",
-              meta = c("Taxonomic levels", "Single taxon", "Top-N composition", "HPV grouping"),
+              section_label = "",
+              title = "Interactive microbiome comparison",
+              dek = "",
+              meta = c(),
               tone = "forest"
             ),
-            stat_strip(list(
-              list(label = "Taxonomic levels", value = as.character(length(level_choices)), note = "Phylum to Species"),
-              list(label = "Initial phyla", value = as.character(length(phylum_name)), note = "Loaded for default selection"),
-              list(label = "Tests", value = "Wilcoxon / Kruskal", note = "Auto-selected by group count")
-            )),
             tags$section(
               class = "feature-card summary-card",
               tags$header(
@@ -505,20 +725,14 @@ app_ui <- function() {
           div(
             class = "page-wrap",
             editorial_hero(
-              section_label = "Contributors",
+              section_label = "",
               title = "Authors, collaborators, and institutional affiliations",
-              dek = "Featured profiles and manuscript-linked authorship notes for the CHICO study, including institutional affiliations and corresponding-author contacts.",
-              meta = c("Manuscript roster", "Institutions", "Correspondence"),
+              dek = "",
+              meta = c(),
               tone = "wine"
             ),
-            stat_strip(list(
-              list(label = "Directory", value = "Authors", note = "Profiles and affiliations"),
-              list(label = "Collaboration", value = "Multi-site", note = "Academic + clinical partners"),
-              list(label = "Contact", value = "Shen Lab", note = "Website, email, GitHub")
-            )),
             article_shell(
-              title = "Author Directory",
-              kicker = "Section 03",
+              title = "",
               badge = "Authors",
               body = uiOutput("authorContent")
             )

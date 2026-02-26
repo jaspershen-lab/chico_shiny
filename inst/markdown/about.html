@@ -85,6 +85,50 @@
       display: block;
       height: auto;
     }
+    .chico-about-ed .map-wrap {
+      margin-bottom: 18px;
+      border: 1px solid rgba(30,26,23,0.10);
+      border-radius: 14px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(176,67,47,0.04), transparent 35%),
+        radial-gradient(circle at 92% 8%, rgba(32,59,53,0.05), transparent 36%),
+        rgba(255,255,255,0.55);
+    }
+    .chico-about-ed .map-svg,
+    .chico-about-ed .map-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: linear-gradient(180deg, rgba(230,239,245,0.65), rgba(243,247,250,0.35));
+    }
+    .chico-about-ed .map-cap {
+      padding: 10px 12px 12px;
+      font-size: 12px;
+      color: #5d544b;
+      line-height: 1.6;
+      border-top: 1px solid rgba(30,26,23,0.08);
+    }
+    .chico-about-ed .map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #6b6158;
+    }
+    .chico-about-ed .map-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chico-about-ed .map-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      display: inline-block;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.85), 0 0 0 3px rgba(176,67,47,0.18);
+    }
     .chico-about-ed .figcap {
       padding: 10px 12px 12px;
       font-size: 12px;
@@ -221,6 +265,20 @@
     <img src="/markdown_assets/figure_1.png" alt="CHICO cohort overview figure" />
     <div class="figcap">
       Figure 1 in the manuscript draft outlines CHICO cohort design, baseline HPV risk composition, follow-up outcomes, and the cervical microbiome profiling workflow that anchors the interactive comparisons shown in this app.
+    </div>
+  </div>
+
+  <div class="section-rule"></div>
+  <h3 class="section-title">Study Geography</h3>
+  <div class="map-wrap">
+    <img src="/markdown_assets/study_world_map.png" alt="World map marking Chengdu and Xi'an" />
+    <div class="map-cap">
+      Geographic context of the CHICO cohort in China. The map highlights the two study-associated cities referenced in the manuscript draft:
+      Chengdu and Xi'an.
+      <div class="map-legend">
+        <span><i class="map-dot" style="background:#d4553b;"></i> Chengdu</span>
+        <span><i class="map-dot" style="background:#b0432f;"></i> Xi'an</span>
+      </div>
     </div>
   </div>
 
